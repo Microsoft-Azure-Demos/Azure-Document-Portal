@@ -1,0 +1,67 @@
+:root {
+  color-scheme: light;
+  --ink: #18253a;
+  --muted: #68778d;
+  --line: #e4eaf2;
+  --surface: #ffffff;
+  --bg: #f4f7fb;
+  --blue: #2563eb;
+  --blue-dark: #1d4ed8;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.page { width: min(920px, calc(100% - 32px)); margin: 48px auto; }
+.header { display: flex; align-items: center; gap: 18px; margin-bottom: 30px; }
+.brand-mark { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; background: #dce9ff; color: var(--blue-dark); font-weight: 800; letter-spacing: -.04em; }
+h1, h2, p { margin-top: 0; }
+h1 { font-size: clamp(28px, 4vw, 36px); margin-bottom: 5px; letter-spacing: -.04em; }
+h2 { font-size: 20px; margin: 0; letter-spacing: -.02em; }
+.subtitle { color: var(--muted); margin: 0; }
+.eyebrow { color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .12em; margin-bottom: 7px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 24px; box-shadow: 0 6px 24px rgba(25, 45, 75, .035); margin-bottom: 18px; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.container-badge, .count-badge { font-size: 12px; color: #52627a; background: #f0f4f9; border-radius: 999px; padding: 8px 11px; white-space: nowrap; }
+.upload-form { display: flex; align-items: center; gap: 12px; }
+.file-picker { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; padding: 14px; border: 1px dashed #b8c8df; border-radius: 12px; cursor: pointer; }
+.upload-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 11px; background: #edf4ff; color: var(--blue); font-size: 24px; font-weight: 700; }
+.file-picker strong, .file-picker small { display: block; }
+.file-picker small { color: var(--muted); margin-top: 3px; font-size: 12px; }
+.file-picker input { margin-left: auto; max-width: 220px; width: 48%; font-size: 12px; }
+.primary-button, .download-button, .delete-button { border: 0; border-radius: 10px; padding: 11px 14px; font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+.primary-button { background: var(--blue); color: white; }
+.primary-button:hover { background: var(--blue-dark); }
+.document-list { display: grid; }
+.document-row { display: flex; align-items: center; gap: 13px; padding: 14px 0; border-top: 1px solid var(--line); }
+.file-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 10px; background: #f0f4f9; color: #65758b; font-size: 10px; font-weight: 800; }
+.document-info { flex: 1; min-width: 0; }
+.document-info strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.document-info small { color: var(--muted); display: block; margin-top: 4px; }
+.actions { display: flex; align-items: center; gap: 8px; }
+.actions form { margin: 0; }
+.download-button { background: #eaf1ff; color: #2458b7; }
+.delete-button { background: #fff0f0; color: #b42332; }
+.empty-state { border-top: 1px solid var(--line); padding: 34px 12px; text-align: center; color: var(--muted); }
+.empty-state strong { display: block; color: var(--ink); margin-bottom: 7px; }
+.empty-state p { margin: 0; font-size: 13px; }
+.empty-icon { font-size: 32px; margin-bottom: 10px; color: #a5b4c7; }
+.messages { margin-bottom: 16px; }
+.message { padding: 12px 14px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; overflow-wrap: anywhere; }
+.message.success { background: #eaf8ef; color: #166534; }
+.message.error { background: #fff0f0; color: #b42332; }
+footer { color: #8793a5; text-align: center; font-size: 12px; padding: 16px; }
+@media (max-width: 680px) {
+  .page { margin: 24px auto; }
+  .card { padding: 18px; }
+  .upload-form { align-items: stretch; flex-direction: column; }
+  .file-picker { flex-wrap: wrap; }
+  .file-picker input { width: 100%; max-width: none; margin-left: 0; }
+  .section-heading { align-items: flex-start; flex-direction: column; }
+  .document-row { align-items: flex-start; }
+  .actions { flex-direction: column; align-items: stretch; }
+  .actions form, .actions button, .actions a { width: 100%; text-align: center; }
+}

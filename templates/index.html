@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Azure Document Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div class="brand-mark">DP</div>
+      <div>
+        <p class="eyebrow">AZURE STORAGE DEMO</p>
+        <h1>Document Portal</h1>
+        <p class="subtitle">Upload and manage files stored in Azure Blob Storage.</p>
+      </div>
+    </header>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="messages" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="message {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+
+
+    <section class="card upload-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ADD TO STORAGE</p>
+          <h2>Upload a document</h2>
+        </div>
+        <span class="container-badge">Container: {{ container_name }}</span>
+      </div>
+      <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="upload-form">
+        <label class="file-picker" for="file">
+          <span class="upload-icon">↑</span>
+          <span><strong>Select a file</strong><small>Maximum file size: 25 MB</small></span>
+          <input type="file" name="file" id="file" required>
+        </label>
+        <button type="submit" class="primary-button">Upload to Blob Storage</button>
+      </form>
+    </section>
+
+
+    <section class="card documents-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">BLOB CONTAINER</p>
+          <h2>Your documents</h2>
+        </div>
+        <span class="count-badge">{{ documents|length }} file(s)</span>
+      </div>
+
+      {% if documents %}
+        <div class="document-list">
+          {% for document in documents %}
+            <article class="document-row">
+              <div class="file-icon">DOC</div>
+              <div class="document-info">
+                <strong title="{{ document.name }}">{{ document.name }}</strong>
+                <small>{{ "%.2f"|format(document.size / 1024) }} KB</small>
+              </div>
+              <div class="actions">
+                <a class="download-button" href="{{ url_for('download', blob_name=document.name) }}">Download</a>
+                <form action="{{ url_for('delete', blob_name=document.name) }}" method="post" onsubmit="return confirm('Delete this document from Blob Storage?');">
+                  <button type="submit" class="delete-button" aria-label="Delete {{ document.name }}">Delete</button>
+                </form>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">▤</div>
+          <strong>No documents yet</strong>
+          <p>Upload a file above. It will appear here after it is stored.</p>
+        </div>
+      {% endif %}
+    </section>
+    <footer>Demo application · Files are stored in Azure Blob Storage</footer>
+  </main>
+</body>
+</html>
