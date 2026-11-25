@@ -1,245 +1,214 @@
 # Azure Document Portal
 
-A lightweight Flask web application for uploading, listing, downloading, and deleting documents stored in **Azure Blob Storage**.
+A containerized Flask application for uploading, listing, downloading, and deleting documents stored in **Azure Blob Storage**.
 
-This application serves as the workload for my Azure Storage and Data Protection project, where I demonstrate secure cloud storage, private connectivity, identity-based access, storage lifecycle management, and disaster recovery using Terraform.
-
-## Overview
-
-The Document Portal provides a simple web interface for managing files stored in Azure Blob Storage. Instead of storing documents locally on the web server, the application uses Azure Blob Storage as its centralized storage backend.
-
-The application is designed to evolve from local development using Azure CLI authentication to deployment on an Azure Virtual Machine using Managed Identity.
+This project demonstrates Azure Storage integration, Docker containerization, secure application configuration, and Azure authentication using connection strings and Managed Identity.
 
 ## Features
 
-- **Upload:** Upload files to Azure Blob Storage.
-- **List:** Display documents stored in a Blob container.
-- **Download:** Retrieve and download stored documents.
-- **Delete:** Remove documents from Blob Storage.
-- **Azure Authentication:** Uses `DefaultAzureCredential` to support local Azure CLI authentication and Azure Managed Identity.
-- **Upload Restrictions:** Enforces a maximum upload size of 25 MB.
+- Upload documents to Azure Blob Storage
+- List documents stored in a Blob container
+- Download documents
+- Delete documents
+- 25 MB upload limit
+- Secure filenames using Werkzeug
+- Production application server using Gunicorn
+- Dockerized application
+- Support for Azure Managed Identity
 
 ## Architecture
 
-```text
-┌────────────────────┐
-│    Web Browser    │
-└─────────┬──────────┘
-          │ HTTP
-          ▼
-┌────────────────────┐
-│   Flask Web App    │
-│                    │
-│ Upload / List      │
-│ Download / Delete  │
-└─────────┬──────────┘
-          │ Azure SDK
-          │ Authentication
-          ▼
-┌────────────────────┐
-│ Azure Blob Storage │
-│                    │
-│ Container:documents│
-└────────────────────┘
-```
-
-## Technology Stack
-
-| Technology | Purpose |
-|---|---|
-| Python | Application programming language |
-| Flask | Web framework |
-| Azure Blob Storage | Cloud document storage |
-| Azure Storage Blob SDK | Blob storage operations |
-| Azure Identity SDK | Azure authentication |
-| HTML / CSS | User interface |
-| Azure CLI | Local development authentication |
-
-## Project Structure
+### Current local development setup
 
 ```text
-azure-document-portal/
-│
-├── app.py
-├── requirements.txt
-├── .env.example
-├── .gitignore
-│
-├── templates/
-│   └── index.html
-│
-└── static/
-    └── style.css
+Browser
+   |
+   | HTTP :80
+   v
+Docker Container
+   |
+   | Flask + Gunicorn :8000
+   |
+   | Azure Storage SDK
+   v
+Azure Blob Storage
+   |
+   +-- documents container
 ```
+
+Local Docker authentication uses an Azure Storage connection string supplied at runtime through an environment file.
+
+### Planned Azure VM deployment
+
+```text
+Browser
+   |
+   v
+Azure Linux VM
+   |
+   | Docker
+   v
+Flask + Gunicorn
+   |
+   | DefaultAzureCredential
+   v
+System-assigned Managed Identity
+   |
+   | Microsoft Entra ID token
+   v
+Azure Blob Storage
+```
+
+The Azure VM will use Managed Identity and Azure RBAC instead of a Storage Account connection string.
+
+## Technologies
+
+- Python 3
+- Flask
+- Gunicorn
+- Azure Blob Storage
+- Azure Identity SDK
+- Azure Storage Blob SDK
+- Docker
+- Linux / Ubuntu
+- Microsoft Entra ID and Azure RBAC
 
 ## Prerequisites
 
-- Python 3.10+
-- Azure CLI
+- Python 3.12 or later (for local Python development)
+- Docker Desktop
+- An Azure subscription
 - An Azure Storage Account
 - A Blob container named `documents`
-- Azure account with appropriate Blob data permissions
 
-## Local Setup
+## Configuration
 
-### 1. Clone the repository
+The application uses environment variables.
 
-```bash
-git clone https://github.com/YOUR_USERNAME/azure-document-portal.git
-cd azure-document-portal
-```
-
-### 2. Create a virtual environment
-
-**Windows PowerShell:**
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-**Linux/macOS:**
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Authenticate with Azure
-
-For local development, authenticate using Azure CLI:
-
-```bash
-az login
-```
-
-Verify your active subscription:
-
-```bash
-az account show
-```
-
-The authenticated identity must have an appropriate Blob data role, such as **Storage Blob Data Contributor**, assigned at the relevant scope.
-
-### 5. Configure environment variables
-
-Set the Storage Account name and Blob container.
-
-**Windows PowerShell:**
-
-```powershell
-$env:AZURE_STORAGE_ACCOUNT_NAME = "your_storage_account_name"
-$env:AZURE_STORAGE_CONTAINER_NAME = "documents"
-$env:FLASK_SECRET_KEY = "your_secret_key"
-$env:PORT = "5000"
-```
-
-**Linux/macOS:**
-
-```bash
-export AZURE_STORAGE_ACCOUNT_NAME="your_storage_account_name"
-export AZURE_STORAGE_CONTAINER_NAME="documents"
-export FLASK_SECRET_KEY="your_secret_key"
-export PORT="5000"
-```
-
-Replace the placeholder values with your own configuration.
-
-### 6. Run the application
-
-```bash
-python app.py
-```
-
-Open the application in your browser:
-
-[http://localhost:5000](http://localhost:5000)
-
-## Azure Storage Configuration
-
-The application connects to Azure Blob Storage using the Storage Account endpoint:
-
-```text
-https://<storage-account-name>.blob.core.windows.net
-```
-
-The target Blob container is configured through an environment variable.
-
-### Authentication
-
-The application uses `DefaultAzureCredential` from the Azure Identity SDK.
-
-This supports different authentication methods depending on the environment:
-
-| Environment | Authentication |
+| Variable | Description |
 |---|---|
-| Local development | Azure CLI credentials |
-| Azure VM | Managed Identity |
-| Other supported Azure environments | Environment-appropriate credentials |
+| `AZURE_STORAGE_ACCOUNT_NAME` | Azure Storage Account name |
+| `AZURE_STORAGE_CONTAINER_NAME` | Blob container name |
+| `AZURE_STORAGE_CONNECTION_STRING` | Optional connection string for local development |
+| `FLASK_SECRET_KEY` | Flask session secret |
+| `PORT` | Application port (default: 5000 for Flask development) |
 
-Storage access is authorized through Azure RBAC data roles rather than embedding Storage Account keys in the application.
+Create a `.env` file in the project root:
 
-## Application Screenshots
+```env
+AZURE_STORAGE_ACCOUNT_NAME=your-storage-account
+AZURE_STORAGE_CONTAINER_NAME=documents
+AZURE_STORAGE_CONNECTION_STRING=your-storage-connection-string
+FLASK_SECRET_KEY=replace-with-a-random-secret
+```
 
-Screenshots of the Document Portal can be added here to demonstrate the interface and functionality.
+**Security:** Never commit `.env` or publish Storage Account keys. The `.env` file must be excluded through `.gitignore` and `.dockerignore`.
+
+## Run with Docker
+
+### 1. Build the image
+
+```bash
+docker build -t azure-document-portal:1.0 .
+```
+
+### 2. Start the container
+
+```bash
+docker run -d \
+  --name document-portal \
+  -p 80:8000 \
+  --env-file .env \
+  --restart unless-stopped \
+  azure-document-portal:1.0
+```
+
+### 3. Open the application
+
+Visit:
 
 ```text
-screenshots/
-├── portal.png
-├── upload.png
-└── documents-list.png
+http://localhost
+```
+
+### 4. View container logs
+
+```bash
+docker logs --tail 100 document-portal
+```
+
+### 5. Stop and remove the container
+
+```bash
+docker rm -f document-portal
+```
+
+## Authentication
+
+The application supports two authentication approaches.
+
+### Local development: Storage connection string
+
+For local Docker development, the application can authenticate using a Storage Account connection string.
+
+The connection string contains the Storage Account key and must be treated as a secret.
+
+### Azure deployment: Managed Identity
+
+When deployed to an Azure VM:
+
+1. Enable the VM's system-assigned Managed Identity.
+2. Assign the identity the `Storage Blob Data Contributor` role on the Storage Account or appropriate container scope.
+3. Configure the Storage Account name and container name.
+4. Do not provide `AZURE_STORAGE_CONNECTION_STRING`.
+5. Allow `DefaultAzureCredential` to obtain a token using the VM's Managed Identity.
+
+This removes the need to store Storage Account keys in the application configuration.
+
+## Docker Image
+
+The Docker image will be published to Docker Hub.
+
+After publication, it can be pulled using:
+
+```bash
+docker pull DOCKERHUB_USERNAME/azure-document-portal:1.0
 ```
 
 ## Security Considerations
 
-This application is designed to support a secure Azure deployment:
+- Do not store credentials in the Dockerfile.
+- Do not commit `.env` files.
+- Use Managed Identity for Azure-hosted applications.
+- Apply least-privilege RBAC permissions.
+- Prefer private network connectivity to Storage where required.
+- Use HTTPS for production application access.
+- Keep the Docker image free of secrets.
 
-- Storage Account public network access can be disabled.
-- Private Endpoint can be used for private Storage connectivity.
-- Private DNS enables internal resolution of the Storage endpoint.
-- Managed Identity eliminates the need to store Azure credentials in the application.
-- Azure RBAC controls access to Blob Storage data.
-- Uploaded files are restricted to a maximum size of 25 MB.
+## Project Status
 
-Additional application-level security, such as user authentication, file type validation, malware scanning, and production-grade deployment configuration, would be required before exposing the application to real users.
-
-## Related Infrastructure Project
-
-This application is part of my Azure Infrastructure as Code portfolio.
-
-**Project 03 — Azure Storage and Data Protection**
-
-The infrastructure project uses Terraform to provision and configure:
-
-- Azure Storage Account
-- Blob Containers
-- Storage Lifecycle Management
-- Private Endpoint
-- Private DNS Zone
-- Managed Identity
-- Azure RBAC
-- Recovery Services Vault
-- Azure VM Backup
-- Backup and recovery testing
-
-The infrastructure repository will demonstrate deploying this application on an Azure VM and accessing Blob Storage through private networking.
+| Component | Status |
+|---|---|
+| Flask application | Completed |
+| Azure Blob Storage integration | Completed |
+| Upload / List / Download / Delete | Tested successfully |
+| Dockerfile and Gunicorn | Completed |
+| Local Docker authentication | Tested successfully |
+| GitHub publication | Pending |
+| Docker Hub publication | Pending |
+| Azure VM deployment with Managed Identity | Next stage |
+| Private Endpoint and Private DNS integration | Planned |
+| Azure Backup and restore demonstration | Planned |
 
 ## Learning Objectives
 
-- Integrating a Python application with Azure Blob Storage.
-- Implementing file upload, download, listing, and deletion.
-- Using Azure SDKs to interact with cloud services.
-- Understanding Azure authentication with `DefaultAzureCredential`.
-- Preparing applications for Managed Identity.
-- Separating application workloads from infrastructure provisioning.
-- Supporting secure cloud application architectures.
+This project demonstrates practical experience with:
 
-## License
-
-This project is intended for learning, experimentation, and portfolio demonstration purposes.
+- Azure Blob Storage
+- Azure SDK for Python
+- Docker image creation and container execution
+- Environment-based application configuration
+- Azure authentication and authorization
+- Microsoft Entra ID Managed Identity
+- Azure RBAC
+- Deploying containerized applications to Azure infrastructure
